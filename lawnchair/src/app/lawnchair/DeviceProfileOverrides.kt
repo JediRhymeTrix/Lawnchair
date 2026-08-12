@@ -142,10 +142,15 @@ class DeviceProfileOverrides @Inject constructor(
             } else {
                 -1
             },
-            foldableDatabaseHotseatIcons = if (deviceType == InvariantDeviceProfile.TYPE_MULTI_DISPLAY) {
-                previewOverrides.foldableDatabaseHotseatIcons ?: prefs.hotseatColumnsUnfolded.get()
-            } else {
-                -1
+            // The favorites database is shared between the folded and unfolded displays, so the
+            // hotseat database must always be able to hold the icons of both states. Never
+            // shrink the database capacity below the larger dock size: hotseat items beyond
+            // the capacity are permanently removed from the database on the next model load,
+            // which happens when folding/unfolding the device.
+            foldableDatabaseHotseatIcons = run {
+                val folded = prefs.hotseatColumns.get()
+                val unfolded = previewOverrides.foldableDatabaseHotseatIcons ?: prefs.hotseatColumnsUnfolded.get()
+                folded.coerceAtLeast(unfolded)
             },
             foldableDatabaseAllAppsColumns = if (deviceType == InvariantDeviceProfile.TYPE_MULTI_DISPLAY) {
                 val folded = prefs2.drawerColumns.firstCached(gridOption = defaultGrid)
