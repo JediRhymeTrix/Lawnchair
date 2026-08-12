@@ -1,0 +1,20 @@
+name: Sync 16-dev
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+      - name: Sync upstream 16-dev
+        run: |
+          git remote add upstream https://github.com/LawnchairLauncher/lawnchair.git
+          git fetch upstream 16-dev
+          git push origin FETCH_HEAD:refs/heads/16-dev --force
