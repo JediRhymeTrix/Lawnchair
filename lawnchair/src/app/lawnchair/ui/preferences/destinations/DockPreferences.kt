@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -147,6 +148,17 @@ fun GridSettings(prefs: PreferenceManager, prefs2: PreferenceManager2) {
     val hotseatColumnsUnfoldedAdapter = prefs.hotseatColumnsUnfolded.getAdapter()
     val hotseatRowsAdapter = prefs.hotseatRows.getAdapter()
     val dockPagesAdapter = prefs.dockPages.getAdapter()
+
+    // The warning below promises that invalid values will be automatically adjusted if
+    // needed, so enforce it here: the shared hotseat database must never end up smaller
+    // than the folded dock icon count.
+    LaunchedEffect(hotseatColumnsAdapter.state.value, hotseatColumnsUnfoldedAdapter.state.value) {
+        val folded = hotseatColumnsAdapter.state.value
+        val unfolded = hotseatColumnsUnfoldedAdapter.state.value
+        if (unfolded < folded) {
+            hotseatColumnsUnfoldedAdapter.onChange(folded)
+        }
+    }
 
     PreferenceGroup(heading = stringResource(id = R.string.grid)) {
         if (isFoldable) {
